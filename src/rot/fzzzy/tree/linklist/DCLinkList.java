@@ -8,7 +8,6 @@ package rot.fzzzy.tree.linklist;
  * @create 2023-08-04-14:16
  */
 public class DCLinkList<E> {
-
     private ListNode head;
     private int size;
 
@@ -30,6 +29,30 @@ public class DCLinkList<E> {
         size++;
     }
 
+    public void removeLast() {
+        ListNode<E> last = head.prev;
+        if (last == head) return;
+        remove(last);
+        size--;
+    }
+
+    public void removeFront() {
+        ListNode<E> first = head.next;
+        if (first == head) return;
+        remove(first);
+        size--;
+    }
+
+    //打印链表
+    public void print_list(){
+        ListNode<E> node = head.next;
+        while(node != head){
+            System.out.print(node.data + "\t");
+            node = node.next;
+        }
+        System.out.println();
+    }
+
     private void add(ListNode<E> node, ListNode<E> prev, ListNode<E> next) {
         prev.next = node;
         next.prev = node;
@@ -37,23 +60,9 @@ public class DCLinkList<E> {
         node.next = next;
     }
 
-    public void removeLast(){
-
-        size--;
-    }
-
-
-    public void removeFront(){
-        remove(head , head.next);
-        size--;
-    }
-
-    private void remove(ListNode<E> prev , ListNode<E> node){
-        if(prev == node) return;
-        prev.next = node.next;
-        node.next.prev = prev;
-
-        //也可以不用指空，java有自动回收机制
+    private void remove(ListNode<E> node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
         node.prev = node.next = null;
     }
 

@@ -1,9 +1,11 @@
 package rot.fzzzy.tree.orderedtree.test;
 
 import org.junit.Test;
+import rot.fzzzy.tree.linklist.DCLinkList;
 import rot.fzzzy.tree.orderedtree.BSTTree;
 
 import java.util.Arrays;
+import java.util.Stack;
 
 /**
  * ClassName: TestClass
@@ -37,8 +39,43 @@ public class TestClass {
 //        }
 //
 //        System.out.println("排序成功");
-//
 //    }
 
+    @Test
+    public void test2() {
+        new AAA<Integer>(null);
 
+    }
+
+    @Test
+    public void test3(){
+        DCLinkList<String> list = new DCLinkList<>();
+        list.addFront("11");
+        list.addFront("22");
+        list.addLast("33");
+        list.addLast("44");
+        list.print_list();
+
+
+        list.removeFront();
+        list.print_list();
+
+        list.removeLast();
+        list.print_list();
+
+        list.removeLast();
+        list.print_list();
+
+        list.removeFront();
+        list.print_list();
+    }
+
+
+    public static class AAA<E> {
+        E data;
+
+        AAA(E data) {
+            this.data = data;
+        }
+    }
 }
