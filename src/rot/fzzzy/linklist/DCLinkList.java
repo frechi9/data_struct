@@ -1,4 +1,4 @@
-package rot.fzzzy.tree.linklist;
+package rot.fzzzy.linklist;
 
 /**
  * ClassName:DCLinkList

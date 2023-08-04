@@ -1,11 +1,7 @@
-package rot.fzzzy.tree.orderedtree.test;
+package rot.fzzzy.test;
 
 import org.junit.Test;
-import rot.fzzzy.tree.linklist.DCLinkList;
-import rot.fzzzy.tree.orderedtree.BSTTree;
-
-import java.util.Arrays;
-import java.util.Stack;
+import rot.fzzzy.linklist.DCLinkList;
 
 /**
  * ClassName: TestClass
