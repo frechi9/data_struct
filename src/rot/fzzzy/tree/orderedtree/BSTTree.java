@@ -65,16 +65,15 @@ public class BSTTree<E> {
         }
 
         BSTNode<E> parent = parent(node);
-        if (parent == null) {//当前删除节点是根节点
-            root = null;
-        } else {
-            //不管度为0还是1，他们的操作都是让parent从原来指向node改为指向node的某一个孩子（包括null）
-            BSTNode<E> child = node.left == null ? node.right : node.left;
-            if (parent.left == node) {
-                parent.left = child;
-            } else {
-                parent.right = child;
-            }
+        BSTNode<E> child = node.left == null ? node.right : node.left;
+
+        //不管度为0还是1，他们的操作都是让parent从原来指向node改为指向node的某一个孩子（包括null）
+        if(parent == null){
+            root = child;
+        }else if(parent.left == node){
+            parent.left = child;
+        }else{
+            parent.right = child;
         }
     }
 
