@@ -7,5 +7,14 @@ package rot.fzzzy.tree.orderedtree;
  * @author fzy
  * @create 2023-08-04-9:51
  */
-public class RBTree {
+public class RBTree<E> {
+
+    private static class RBNode<E>{
+        E data;
+        int color;
+
+        
+
+    }
+
 }
