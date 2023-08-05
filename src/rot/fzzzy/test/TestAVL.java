@@ -12,7 +12,7 @@ import rot.fzzzy.tree.orderedtree.AVLTree;
  */
 public class TestAVL {
 
-    private static final int TIME = 20;
+    private static final int TIME = 50;
 
     @Test
     public void test() {
@@ -33,7 +33,6 @@ public class TestAVL {
                     if (!avlTree.isSorted(null, avlTree.root)) {
                         throw new RuntimeException("傻逼排序代码出错辣！");
                     }
-                    System.out.println("我来过一次");
                 }
 
                 int choice = (int) (Math.random() * 10);

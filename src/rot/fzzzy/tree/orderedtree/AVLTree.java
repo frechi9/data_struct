@@ -6,10 +6,6 @@ import java.util.Comparator;
  * ClassName: AVLTree
  * Description:
  * <p>
- * todo
- *      insert 已经完善
- *      remove 存在严重bug
- *
  * @author fzy
  * @create 2023-08-04-9:52
  */
@@ -102,7 +98,9 @@ public class AVLTree<E> {
         int degree0 = degree(node);
 
         if (degree0 == 2) {
-            node = next(node);
+            AVLNode<E> minMax = next(node);
+            node.data = minMax.data;
+            node = minMax;
         }
 
         AVLNode<E> parent = node.parent;
@@ -142,44 +140,32 @@ public class AVLTree<E> {
             if (parent.bf == 2) {
                 AVLNode<E> ubfNode = parent.left;
                 if (ubfNode.bf == 0) {
-
-                    nextNode = ubfNode;
-
                     parent.bf = 1;
                     ubfNode.bf = -1;
                     rotationLL(parent);
+                    return;//非常有意思的一点
                 } else if (ubfNode.bf == 1) {
-
                     nextNode = ubfNode;
-
                     changeBfLL(parent, ubfNode);
                     rotationLL(parent);
-                } else {
-
+                } else {// -1
                     nextNode = ubfNode.right;
-
                     changeBfLR(parent, ubfNode, ubfNode.right);
                     rotationLR(parent);
                 }
             } else if (parent.bf == -2) {
                 AVLNode<E> ubfNode = parent.right;
                 if (ubfNode.bf == 0) {
-
-                    nextNode = ubfNode;
-
                     parent.bf = -1;
                     ubfNode.bf = 1;
                     rotationRR(parent);
+                    return;//同上
                 } else if (ubfNode.bf == -1) {
-
                     nextNode = ubfNode;
-
                     changeBfRR(parent, ubfNode);
                     rotationRR(parent);
                 } else {
-
                     nextNode = ubfNode.left;
-
                     changeBfRL(parent, ubfNode, ubfNode.left);
                     rotationRL(parent);
                 }
@@ -188,27 +174,6 @@ public class AVLTree<E> {
             parent = nextParent;
             node = nextNode;
         }
-    }
-
-    public int isBalanced(AVLNode<E> node) {
-        if (node == null) return 0;
-        int hl = isBalanced(node.left);
-        int hr = isBalanced(node.right);
-
-        if (Math.abs(hl - hr) >= 2) throw new RuntimeException("傻逼代码失衡辣");
-        return Math.max(hl, hr) + 1;
-    }
-
-    public boolean isSorted(AVLNode<E> pre, AVLNode<E> node) {
-        if (node == null) return true;
-        boolean lb = isSorted(pre, node.left);
-
-        boolean flag = true;
-        if (pre == null) pre = node;
-        else flag = compareTo(node.data, pre.data) >= 0 ? true : false;
-
-        boolean rb = isSorted(node, node.right);
-        return flag && lb && rb;
     }
 
     private AVLNode<E> next(AVLNode<E> node) {
@@ -370,6 +335,29 @@ public class AVLTree<E> {
     //fixme
     public void clear() {
         root = null;
+    }
+
+    //fixme
+    public int isBalanced(AVLNode<E> node) {
+        if (node == null) return 0;
+        int hl = isBalanced(node.left);
+        int hr = isBalanced(node.right);
+
+        if (Math.abs(hl - hr) >= 2) throw new RuntimeException("傻逼代码失衡辣");
+        return Math.max(hl, hr) + 1;
+    }
+
+    //fixme
+    public boolean isSorted(AVLNode<E> pre, AVLNode<E> node) {
+        if (node == null) return true;
+        boolean lb = isSorted(pre, node.left);
+
+        boolean flag = true;
+        if (pre == null) pre = node;
+        else flag = compareTo(node.data, pre.data) >= 0 ? true : false;
+
+        boolean rb = isSorted(node, node.right);
+        return flag && lb && rb;
     }
 
     private static class AVLNode<E> {
