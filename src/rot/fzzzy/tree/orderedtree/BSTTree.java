@@ -12,8 +12,8 @@ import java.util.Queue;
  * @create 2023-08-04-9:52
  */
 public class BSTTree<E> {
-    private BSTNode<E> root;
-//    public BSTNode<E> root;
+//    private BSTNode<E> root;
+    public BSTNode<E> root;
     protected Comparator<E> comparator;
     protected boolean comparableFlag;
 
@@ -125,7 +125,7 @@ public class BSTTree<E> {
         else return 1;
     }
 
-    protected int compareTo(E e1, E e2) {
+    private int compareTo(E e1, E e2) {
         if (comparator != null) return comparator.compare(e1, e2);
         if (comparableFlag == true) {
             return ((Comparable<E>) e1).compareTo(e2);
@@ -133,7 +133,7 @@ public class BSTTree<E> {
         throw new RuntimeException("can not convert incomparable to comparable");
     }
 
-    protected boolean isComparable() {
+    private boolean isComparable() {
         if (root == null) return false;
         if (comparator == null) {
             Class<?> clazz = root.data.getClass();

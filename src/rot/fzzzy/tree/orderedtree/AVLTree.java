@@ -1,20 +1,40 @@
 package rot.fzzzy.tree.orderedtree;
 
+import java.util.Comparator;
+
 /**
  * ClassName: AVLTree
  * Description:
+ * <p>
+ * todo
+ *      insert 已经完善
+ *      remove 存在严重bug
  *
  * @author fzy
  * @create 2023-08-04-9:52
  */
-public class AVLTree<E> extends BSTTree<E> {
 
-    //    public AVLNode<E> root;
-    private AVLNode<E> root;
+public class AVLTree<E> {
+
+    //    private AVLNode<E> root;
+    public AVLNode<E> root;
+    private boolean comparableFlag;
+    private Comparator<E> comparator;
+
+    public AVLTree() {
+        this.root = null;
+        this.comparator = null;
+    }
+
+    public AVLTree(Comparator<E> comparator) {
+        this.root = null;
+        this.comparator = comparator;
+    }
 
     public void insert(E data) {
         if (root == null) {
             root = new AVLNode<E>(data);
+            this.comparableFlag = isComparable();
         } else {
             AVLNode<E> parent = null, current = root;
             int compare = 0;
@@ -43,6 +63,39 @@ public class AVLTree<E> extends BSTTree<E> {
         }
     }
 
+    private void insert_justify(AVLNode<E> node) {
+        AVLNode<E> parent = node.parent;
+
+        while (parent != null) {
+            if (parent.left == node) parent.bf++;
+            else parent.bf--;
+
+            if (parent.bf == 0) return;
+            if (parent.bf == 2) {
+                if (node.bf == 1) {//LL
+                    changeBfLL(parent, node);
+                    rotationLL(parent);
+                } else {//LR
+                    changeBfLR(parent, node, node.right);
+                    rotationLR(parent);
+                }
+                return;
+            } else if (parent.bf == -2) {
+                if (node.bf == -1) {//RR
+                    changeBfRR(parent, node);
+                    rotationRR(parent);
+                } else {//RL
+                    changeBfRL(parent, node, node.left);
+                    rotationRL(parent);
+                }
+                return;
+            } else {//bf == 1
+                node = parent;
+                parent = parent.parent;
+            }
+        }
+    }
+
     public void remove(E data) {
         AVLNode<E> node = search(data);
         if (node == null) return;
@@ -65,79 +118,84 @@ public class AVLTree<E> extends BSTTree<E> {
         }
         if (child != null) child.parent = parent;
 
-        //------------------------------------------------
-//        remove_justify(parent);
+        if (parent != null && parent.left == null && parent.right == null) {//因为后续是通过对比左右指针确定孩子位置的
+            //只有在第一次判断时可能出现左右指针均为空，此时直接设置parent的bf为0即可
+            parent.bf = 0;
+            remove_justify(parent.parent, parent);
+        } else {
+            remove_justify(parent, child);
+        }
     }
 
-
-    public void remove_justify(AVLNode<E> parent, AVLNode<E> node) {
-        if (parent.left == null && parent.right == null) {
-            parent.bf = 0;
-            node = parent;
-            parent = parent.parent;
-        }
-
+    private void remove_justify(AVLNode<E> parent, AVLNode<E> node) {
         while (parent != null) {
             if (parent.left == node) {
                 parent.bf--;
             } else {
                 parent.bf++;
             }
+            //等于1代表当前以parent为根的子树高度没有发生变化，自此往上也就不存在失衡，推出调整循环
+            if (Math.abs(parent.bf) == 1) return;
 
-            //todo 旋转后的bf还没有修改
-            if (Math.abs(parent.bf) == 1) break;
+            AVLNode nextParent = parent.parent, nextNode = parent;
+            //等于2代表删除后向上调整时出现了失衡，需要按照插入时的调整方式进行调整
             if (parent.bf == 2) {
-                if (node.bf == 1) {
-                    rotationRight(parent);
+                AVLNode<E> ubfNode = parent.left;
+                if (ubfNode.bf == 0) {
+
+                    nextNode = ubfNode;
+
+                    parent.bf = 1;
+                    ubfNode.bf = -1;
+                    rotationLL(parent);
+                } else if (ubfNode.bf == 1) {
+
+                    nextNode = ubfNode;
+
+                    changeBfLL(parent, ubfNode);
+                    rotationLL(parent);
                 } else {
-                    rotationLeftThenRight(parent);
+
+                    nextNode = ubfNode.right;
+
+                    changeBfLR(parent, ubfNode, ubfNode.right);
+                    rotationLR(parent);
                 }
             } else if (parent.bf == -2) {
-                if(node.bf == -1){
-                    rotationLeft(parent);
-                }else{
-                    rotationRightThenLeft(parent);
+                AVLNode<E> ubfNode = parent.right;
+                if (ubfNode.bf == 0) {
+
+                    nextNode = ubfNode;
+
+                    parent.bf = -1;
+                    ubfNode.bf = 1;
+                    rotationRR(parent);
+                } else if (ubfNode.bf == -1) {
+
+                    nextNode = ubfNode;
+
+                    changeBfRR(parent, ubfNode);
+                    rotationRR(parent);
+                } else {
+
+                    nextNode = ubfNode.left;
+
+                    changeBfRL(parent, ubfNode, ubfNode.left);
+                    rotationRL(parent);
                 }
-            } else {
-                node = parent;
-                parent = parent.parent;
             }
+
+            parent = nextParent;
+            node = nextNode;
         }
     }
 
-    public void insert_justify(AVLNode<E> node) {
-        AVLNode<E> parent = node.parent;
-
-        while (parent != null) {
-            if (parent.left == node) parent.bf++;
-            else parent.bf--;
-
-            if (parent.bf == 0) break;
-            if (parent.bf == 2) {
-                if (node.bf == 1) {//LL
-                    rotationRight(parent);
-                } else {//LR
-                    rotationLeftThenRight(parent);
-                }
-            } else if (parent.bf == -2) {
-                if (node.bf == -1) {//RR
-                    rotationLeft(parent);
-                } else {//RL
-                    rotationRightThenLeft(parent);
-                }
-            } else {//bf == 1
-                node = parent;
-                parent = parent.parent;
-            }
-        }
-    }
-
-    public int isBalanced(AVLNode<E> node, boolean flag) {
+    public int isBalanced(AVLNode<E> node) {
         if (node == null) return 0;
-        int hl = isBalanced(node.left, flag);
-        int hr = isBalanced(node.right, flag);
+        int hl = isBalanced(node.left);
+        int hr = isBalanced(node.right);
 
-        if (Math.abs(hl - hr) > 1) flag = false;
+        if (Math.abs(hl - hr) >= 2) throw new RuntimeException("傻逼代码失衡辣");
         return Math.max(hl, hr) + 1;
     }
 
@@ -178,12 +236,34 @@ public class AVLTree<E> extends BSTTree<E> {
         return null;
     }
 
+    private int compareTo(E e1, E e2) {
+        if (comparator != null) return comparator.compare(e1, e2);
+        if (comparableFlag == true) {
+            return ((Comparable<E>) e1).compareTo(e2);
+        }
+        throw new RuntimeException("can not convert incomparable to comparable");
+    }
+
+    private boolean isComparable() {
+        if (root == null) return false;
+        if (comparator == null) {
+            Class<?> clazz = root.data.getClass();
+            String ComparableName = Comparable.class.getName();
+            Class<?>[] interfaces = clazz.getInterfaces();
+            for (Class Interface : interfaces) {
+                String interfaceName = Interface.getName();
+                if (ComparableName.equals(interfaceName)) return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * parent节点向右旋转
      *
      * @param parent
      */
-    private void rotationRight(AVLNode<E> parent) {//LL
+    private void rotationLL(AVLNode<E> parent) {//LL
         AVLNode<E> node = parent.left;
         AVLNode<E> gp = parent.parent;
 
@@ -199,8 +279,12 @@ public class AVLTree<E> extends BSTTree<E> {
         parent.left = node.right;
         if (node.right != null) node.right.parent = parent;
 
-        node.left = parent;
+        node.right = parent;
         parent.parent = node;
+    }
+
+    private void changeBfLL(AVLNode<E> parent, AVLNode<E> node) {//LL
+        parent.bf = node.bf = 0;
     }
 
     /**
@@ -208,7 +292,7 @@ public class AVLTree<E> extends BSTTree<E> {
      *
      * @param parent
      */
-    private void rotationLeft(AVLNode<E> parent) {//RR
+    private void rotationRR(AVLNode<E> parent) {//RR
         AVLNode<E> node = parent.right;
         AVLNode<E> gp = parent.parent;
 
@@ -229,15 +313,33 @@ public class AVLTree<E> extends BSTTree<E> {
 
     }
 
+    private void changeBfRR(AVLNode<E> parent, AVLNode<E> node) {//RR
+        parent.bf = node.bf = 0;
+    }
+
     /**
      * parent.left节点先向左旋转
      * parent节点再向右旋转
      *
      * @param parent
      */
-    private void rotationLeftThenRight(AVLNode<E> parent) {//LR
-        rotationLeft(parent.left);
-        rotationRight(parent);
+    private void rotationLR(AVLNode<E> parent) {//LR
+        rotationRR(parent.left);
+        rotationLL(parent);
+    }
+
+    private void changeBfLR(AVLNode<E> parent, AVLNode<E> node, AVLNode<E> rchild) {//LR
+        if (rchild.bf == 0) {//由于rchild的产生导致的失衡
+            parent.bf = 0;
+            node.bf = 0;
+        } else if (rchild.bf == 1) {//由于rchild的左子树高度增加导致的失衡
+            parent.bf = -1;
+            node.bf = 0;
+        } else {//由于rchild的右子树高度增加导致的失衡
+            parent.bf = 0;
+            node.bf = 1;
+        }
+        rchild.bf = 0;
     }
 
     /**
@@ -246,9 +348,28 @@ public class AVLTree<E> extends BSTTree<E> {
      *
      * @param parent
      */
-    private void rotationRightThenLeft(AVLNode<E> parent) {//RL
-        rotationLeft(parent.left);
-        rotationRight(parent);
+    private void rotationRL(AVLNode<E> parent) {//RL
+        rotationLL(parent.right);
+        rotationRR(parent);
+    }
+
+    private void changeBfRL(AVLNode<E> parent, AVLNode<E> node, AVLNode<E> lchild) {//RL
+        if (lchild.bf == 0) {
+            parent.bf = 0;
+            node.bf = 0;
+        } else if (lchild.bf == 1) {
+            parent.bf = 0;
+            node.bf = -1;
+        } else {
+            parent.bf = 1;
+            node.bf = 0;
+        }
+        lchild.bf = 0;
+    }
+
+    //fixme
+    public void clear() {
+        root = null;
     }
 
     private static class AVLNode<E> {
