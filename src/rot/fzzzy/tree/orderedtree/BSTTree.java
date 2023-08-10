@@ -55,6 +55,7 @@ public class BSTTree<E> {
         }
     }
 
+    //todo 有问题
     public void remove(E data) {
         BSTNode<E> node = search(data);
         if (node == null) return;
