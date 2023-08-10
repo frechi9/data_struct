@@ -1,5 +1,6 @@
 package rot.fzzzy.tree.orderedtree;
 
+import java.util.Base64;
 import java.util.Comparator;
 
 /**
@@ -130,49 +131,40 @@ public class RBTree<E> {
                 RBNode<E> sibling = parent.left == node ? parent.right : parent.left;
                 delete(parent, node, child);
 
+                //??? why nullptr
                 if (sibling.color == black) {//这边分支相当于双黑，要想保证红黑树的黑高一致，显然一定存在一个兄弟节点
 
                     RBNode<E> lcousin = sibling.left, rcousin = sibling.right;
                     int lcousinColor = lcousin == null ? black : lcousin.color;
                     int rcousinColor = rcousin == null ? black : rcousin.color;
 
-                    if (lcousinColor == red) {//兄弟节点的左子节点为红色，如果左右都为红色也可以
-                        if (parent.left == sibling) {
+                    if (lcousinColor == red || rcousinColor == red) {//兄弟节点的左子节点为红色，如果左右都为红色也可以
+                        if (sibling == parent.left) {
+                            if (lcousinColor == red) {
 
-                            if(parent.color == black){
-                                lcousin.color = black;
+                                if (parent.color == black) lcousin.color = black;
+                                rotationLL(parent);
+                            } else {
+
+                                if (parent.color == black) rcousin.color = black;
+                                else parent.color = black;
+                                rotationLR(parent);
                             }
-                            rotationLL(parent);
                         } else {
+                            if (rcousinColor == red) {
 
-                            if(parent.color == black){
-                                lcousin.color = black;
-                            }else{
-                                parent.color = black;
+                                if (parent.color == black) rcousin.color = black;
+                                rotationRR(parent);
+                            } else {
+
+                                if (parent.color == black) lcousin.color = black;
+                                else parent.color = black;
+                                rotationRL(parent);
                             }
-                            rotationRL(parent);
-
                         }
-                    } else if (rcousinColor == red) {//兄弟节点的右子节点为红色，显然能来到这里证明至少左子节点不能为红色
-                        if (parent.right == sibling) {
+                    } else {//兄弟节点的子节点为黑色
 
-                            if(parent.color == black){
-                                rcousin.color = black;
-                            }
-                            rotationRR(parent);
-                        } else {
-
-                            if(parent.color == black){
-                                rcousin.color = black;
-                            }else{
-                                parent.color = black;
-                            }
-                            rotationLR(parent);
-                        }
-                    } else {//兄弟节点的子节点为黑色（包括null）
-                        //需要递归向上
                         handle_recur(parent, sibling);
-
                     }
                 } else {
                     parent.color = red;
@@ -195,24 +187,26 @@ public class RBTree<E> {
         if (parent == null) {
             root = child;
         } else if (parent.left == node) {
-            root.left = child;
+            parent.left = child;
         } else {
-            root.right = child;
+            parent.right = child;
         }
+
         if (child != null) {
             child.parent = parent;
         }
+        node.parent = node.left = node.right = null;
     }
 
     private void handle_recur(RBNode<E> parent, RBNode<E> node) {
-        RBNode<E> np, nn;
+        RBNode<E> np = null, nn = null;
         while (parent != null) {
             np = parent.parent;
-            nn = np.left == parent ? np.right : np.left;
+            if (np != null) nn = np.left == parent ? np.right : np.left;
 
             node.color = red;
-            if (np.color == red) {
-                np.color = black;
+            if (parent.color == red) {
+                parent.color = black;
                 return;
             }
 
@@ -376,3 +370,89 @@ public class RBTree<E> {
     }
 
 }
+
+/*
+
+    public void remove(E data) {
+        RBNode<E> node = search(data);
+        if (node == null) return;
+        int degree0 = degree(node);
+
+        if (degree0 == 2) {
+            RBNode<E> minMax = next(node);
+            node.data = minMax.data;
+            node = minMax;
+        }
+
+        RBNode<E> parent = node.parent;
+        RBNode<E> child = node.left == null ? node.right : node.left;
+        int ncolor = node.color, ccolor = child == null ? black : child.color;
+
+        if ((ncolor ^ ccolor) == 1) {//删除节点与孩子节点一黑一红
+            delete(parent, node, child);
+            if (child != null) child.color = black;
+        } else {//删除节点与孩子节点双黑
+            if (parent == null) {
+                delete(parent, node, child);
+            } else {
+                RBNode<E> sibling = parent.left == node ? parent.right : parent.left;
+                delete(parent, node, child);
+
+                if (sibling.color == black) {//这边分支相当于双黑，要想保证红黑树的黑高一致，显然一定存在一个兄弟节点
+
+                    RBNode<E> lcousin = sibling.left, rcousin = sibling.right;
+                    int lcousinColor = lcousin == null ? black : lcousin.color;
+                    int rcousinColor = rcousin == null ? black : rcousin.color;
+
+                    if (lcousinColor == red) {//兄弟节点的左子节点为红色，如果左右都为红色也可以
+                        if (parent.left == sibling) {
+
+                            lcousin.color = sibling.color;
+                            sibling.color = parent.color;
+                            parent.color = black;
+                            rotationLL(parent);
+
+                        } else {
+
+                            lcousin.color = parent.color;
+                            parent.color = black;
+                            rotationRL(parent);
+                        }
+                    } else if (rcousinColor == red) {//兄弟节点的右子节点为红色，显然能来到这里证明至少左子节点不能为红色
+                        if (parent.right == sibling) {
+
+                            rcousin.color = sibling.color;
+                            sibling.color = parent.color;
+                            parent.color = black;
+                            rotationRR(parent);
+
+                        } else {
+
+                            rcousin.color = parent.color;
+                            parent.color = black;
+                            rotationLR(parent);
+                        }
+                    } else {//兄弟节点的子节点为黑色（包括null）
+
+                        handle_recur(parent, sibling);
+                    }
+                }
+                else {
+                    parent.color = red;
+                    sibling.color = black;
+
+                    if (sibling == parent.left) {
+                        rotationLL(parent);
+                    } else {
+                        rotationRR(parent);
+                    }
+
+                    sibling = parent.left == child ? parent.right : parent.left;
+                    handle_recur(parent, sibling);
+                }
+            }
+        }
+    }
+
+
+* */

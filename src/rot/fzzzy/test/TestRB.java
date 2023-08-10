@@ -13,12 +13,12 @@ import rot.fzzzy.tree.orderedtree.RBTree;
  */
 public class TestRB {
 
-    private static final int TIME = 50;
+    private static final int TIME = 10;
 
     @Test
     public void test() {
         for (int i = 0; i < TIME; i++) {
-            int len = (int) (Math.random() * 200 + 20);
+            int len = (int) (Math.random() * 200 + 200);
             int arr[] = new int[len];
             RBTree<Integer> rbTree = new RBTree<>();
             for (int j = 0; j < len; j++) {
@@ -39,7 +39,7 @@ public class TestRB {
 
                 int choice = (int) (Math.random() * 10);
                 if (choice < 3) {
-                    rbTree.remove((int) (Math.random() * 300 + 1));
+                    rbTree.remove((int) (Math.random() * 500 + 1));
                 } else if(choice < 8){
                     rbTree.insert((int) (Math.random() * 500 + 1));
                 }else{
@@ -50,6 +50,7 @@ public class TestRB {
                 }
             }
 
+            System.out.println("-------------------------算你狗运过一次");
             rbTree.clear();
         }
 
