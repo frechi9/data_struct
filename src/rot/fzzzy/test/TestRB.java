@@ -39,7 +39,7 @@ public class TestRB {
 
                 int choice = (int) (Math.random() * 10);
                 if (choice < 3) {
-                   // rbTree.remove((int) (Math.random() * 300 + 1));
+                    rbTree.remove((int) (Math.random() * 300 + 1));
                 } else if(choice < 8){
                     rbTree.insert((int) (Math.random() * 500 + 1));
                 }else{

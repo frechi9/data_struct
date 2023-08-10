@@ -121,48 +121,104 @@ public class RBTree<E> {
         int ncolor = node.color, ccolor = child == null ? black : child.color;
 
         if ((ncolor ^ ccolor) == 1) {//删除节点与孩子节点一黑一红
-            if (parent == null) {
-                root = child;
-            } else if (parent.left == node) {
-                parent.left = child;
-            } else {
-                parent.right = child;
-            }
-            if (child != null) {
-                child.parent = parent;
-                child.color = black;
-            }
+            delete(parent, node, child);
+            if (child != null) child.color = black;
         } else {//删除节点与孩子节点双黑
             if (parent == null) {
-                root = child;
-                if (child != null) child.parent = parent;
+                delete(parent, node, child);
             } else {
                 RBNode<E> sibling = parent.left == node ? parent.right : parent.left;
-                if(sibling.color == black){//这边分支相当于双黑，要想保证红黑树的黑高一致，显然一定存在一个兄弟节点
+                delete(parent, node, child);
+
+                if (sibling.color == black) {//这边分支相当于双黑，要想保证红黑树的黑高一致，显然一定存在一个兄弟节点
+
                     RBNode<E> lcousin = sibling.left, rcousin = sibling.right;
                     int lcousinColor = lcousin == null ? black : lcousin.color;
                     int rcousinColor = rcousin == null ? black : rcousin.color;
-                    if(lcousinColor == red){//兄弟节点的左子节点为红色，如果左右都为红色也可以
 
+                    if (lcousinColor == red) {//兄弟节点的左子节点为红色，如果左右都为红色也可以
+                        if (parent.left == sibling) {
 
-                    }else if(rcousinColor == red){//兄弟节点的右子节点为红色，显然能来到这里证明至少左子节点不能为红色
+                            if(parent.color == black){
+                                lcousin.color = black;
+                            }
+                            rotationLL(parent);
+                        } else {
 
+                            if(parent.color == black){
+                                lcousin.color = black;
+                            }else{
+                                parent.color = black;
+                            }
+                            rotationRL(parent);
 
-                    }else{//兄弟节点的子节点为黑色（包括null）
+                        }
+                    } else if (rcousinColor == red) {//兄弟节点的右子节点为红色，显然能来到这里证明至少左子节点不能为红色
+                        if (parent.right == sibling) {
+
+                            if(parent.color == black){
+                                rcousin.color = black;
+                            }
+                            rotationRR(parent);
+                        } else {
+
+                            if(parent.color == black){
+                                rcousin.color = black;
+                            }else{
+                                parent.color = black;
+                            }
+                            rotationLR(parent);
+                        }
+                    } else {//兄弟节点的子节点为黑色（包括null）
+                        //需要递归向上
+                        handle_recur(parent, sibling);
 
                     }
-                }else{
+                } else {
+                    parent.color = red;
+                    sibling.color = black;
 
+                    if (sibling == parent.left) {
+                        rotationLL(parent);
+                    } else {
+                        rotationRR(parent);
+                    }
 
-
+                    sibling = parent.left == child ? parent.right : parent.left;
+                    handle_recur(parent, sibling);
                 }
             }
         }
     }
 
-    private void remove_justify(RBNode<E> parent, RBNode<E> node) {
+    private void delete(RBNode<E> parent, RBNode<E> node, RBNode<E> child) {//只负责删除
+        if (parent == null) {
+            root = child;
+        } else if (parent.left == node) {
+            root.left = child;
+        } else {
+            root.right = child;
+        }
+        if (child != null) {
+            child.parent = parent;
+        }
+    }
 
+    private void handle_recur(RBNode<E> parent, RBNode<E> node) {
+        RBNode<E> np, nn;
+        while (parent != null) {
+            np = parent.parent;
+            nn = np.left == parent ? np.right : np.left;
 
+            node.color = red;
+            if (np.color == red) {
+                np.color = black;
+                return;
+            }
+
+            parent = np;
+            node = nn;
+        }
     }
 
     public boolean ifExist(E data) {
@@ -320,19 +376,3 @@ public class RBTree<E> {
     }
 
 }
-
-/*
-*  RBNode<E> parent = node.parent;
-        RBNode<E> child = node.left == null ? node.right : node.left;
-
-        //不管度为0还是1，他们的操作都是让parent从原来指向node改为指向node的某一个孩子（包括null）
-        if (parent == null) {
-            root = child;
-        } else if (parent.left == node) {
-            parent.left = child;
-        } else {
-            parent.right = child;
-        }
-        if (child != null) child.parent = parent;
-
-* */
